@@ -45,11 +45,11 @@ async def on_ready():
 
 @bot.command(name='add', help='Add a movie to the movie list')
 async def add(ctx, *args):
-    logger.debug('Parsing command - ADD')
+    logger.debug('Parsing command')
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    logger.debug('Parsing command - REACT')
+    logger.debug('Parsing command')
 
 @bot.event
 async def on_message(message):
@@ -116,7 +116,21 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send('Command Didn\'t Work.')
         
+# UTILITIES
+
+def parse_username(author_obj):
+    try:
+        user = str(author_obj.display_name)
+    except:
+        user = 'None'
+
+    if user == 'None':
+        user = str(author_obj).split('#')[0]
+    user = user.capitalize()
+
+    return user
 
 # MAIN
+
 if __name__ == "__main__":
     bot.run(TOKEN)
