@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from datetime import datetime
 from dotenv import load_dotenv
 import random
@@ -9,6 +10,8 @@ import traceback
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+from dice_roller import roll_dice
 
 # Load ENV
 load_dotenv()
@@ -46,6 +49,41 @@ async def on_ready():
 @bot.command(name='add', help='Add a movie to the movie list')
 async def add(ctx, *args):
     logger.debug('Parsing command')
+
+@bot.command(name='roll', help='roll dice!')
+async def roll(ctx, *args):
+    logger.debug('Parsing command')
+
+    input_str = ''.join(args)
+    roll_total, roll_list, static_list = roll_dice(input_str)
+
+    user = parse_username(ctx.message.author)
+
+    total_response = f"{user}'s roll: **{roll_total}**"
+    roll_data = ''
+    
+    if len(roll_list) > 0:
+        for roll_set in roll_list:
+
+            dice_text = ''
+            for roll_val in roll_set:
+                dice_text += f'{roll_val}, '
+            dice_text = f'({dice_text[:-2]}) + '
+
+            roll_data += dice_text
+            
+    if len(static_list) > 0:
+        for static_val in static_list:
+            roll_data += f'({static_val}) + '
+
+    if len(roll_data) > 0:
+        roll_response = f"{total_response} ||`{roll_data[:-3]}`||"
+    else: 
+        roll_response = f"{total_response}"
+
+    await ctx.send(roll_response)
+
+    return
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -87,7 +125,6 @@ async def on_message(message):
         (['inquisition','inquisitor','inquisitive','inquiry','inquire'], 'No one expects the Spanish Inquisition!'),
         (['treasure'], 'Maybe the real treasure was the friends we made along the way'),
         (['pivot'],'https://media.giphy.com/media/3nfqWYzKrDHEI/giphy.gif'),
-        (['worm','werm'],'**WERMS**\n\n*This message has been brought to you by Whermhwood Yacht Club, LLC*\n*A subsidiary of Werms Inc*'),
         (['boom','baby'],'https://media.giphy.com/media/11SkMd003FMgW4/giphy.gif')
     ]
 
