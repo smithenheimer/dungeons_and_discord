@@ -84,7 +84,7 @@ async def tip(ctx, *args):
         tag_results = re.search(tag_pattern, arg.replace('!',''))
         if tag_results:
             user_id = tag_results.group(1)
-            print(user_id)
+            logger.debug(f'User: {user_id}')
             users.append(user_id)
             continue
 
@@ -92,7 +92,7 @@ async def tip(ctx, *args):
         if gp_results:
             gp = gp_results.group(1)
             gp = int(gp)
-            print(gp)
+            logger.debug(f'{gp} gold')
             continue
 
     for user_id in users:
