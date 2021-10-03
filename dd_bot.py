@@ -77,11 +77,11 @@ async def tip(ctx, *args):
     users = []
     gp = 5
     
-    tag_pattern = r'<@!(.*)>'
+    tag_pattern = r'<@(.*)>'
     gp_pattern = r'(\d*)gp'
 
     for arg in args:
-        tag_results = re.search(tag_pattern, arg)
+        tag_results = re.search(tag_pattern, arg.replace('!',''))
         if tag_results:
             user_id = tag_results.group(1)
             print(user_id)
@@ -115,7 +115,7 @@ async def balance(ctx, *args):
     logger.debug('Listing point balances')
     logger.debug(args)
     
-    tag_pattern = r'<@!(.*)>'
+    tag_pattern = r'<@(.*)>'
     nickname_lookup = {str(m.id):m.display_name for m in ctx.guild.members}
 
     scribe = Scribe()
@@ -130,7 +130,7 @@ async def balance(ctx, *args):
     if len(args) > 0:
         users = []
         for arg in args:
-            results = re.search(tag_pattern, arg)
+            results = re.search(tag_pattern, arg.replace('!',''))
             if results:
                 user = results.group(1)
                 users.append(user)
