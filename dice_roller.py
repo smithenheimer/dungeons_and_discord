@@ -4,14 +4,8 @@ import logging
 import argparse
 from random import randint, choices
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-log_format = logging.Formatter("%(asctime)s - %(name)s - %(funcName)s | %(levelname)s - %(lineno)s - %(message)s")
-sh = logging.StreamHandler()
-sh.setLevel(logging.DEBUG)
-sh.setFormatter(log_format)
-logger.addHandler(sh)
+from loguru import logger
+logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
 def roll_dice(input_str):
     ''' DOC STRING!

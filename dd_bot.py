@@ -34,11 +34,7 @@ TIP_TABLE = 'transactions'
 
 # Logging Handler
 from loguru import logger
-log_path = r'logs'
-if not os.path.exists(log_path):
-    os.mkdirs(log_path)
 logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
-logger.add(os.path.join(log_path, 'dd_bot.log'), rotation="00:00")
 
 # START BOT!
 bot = commands.Bot(intents=intents, command_prefix='!')
