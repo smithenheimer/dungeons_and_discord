@@ -1,6 +1,5 @@
-import os
+import sys
 import re
-import logging
 import argparse
 from random import randint, choices
 
@@ -68,7 +67,3 @@ if __name__ == "__main__":
     parser.add_argument('input_str')
     args = parser.parse_args()
     roll_total, roll_list, static_list = roll_dice(args.input_str)
-
-    print(roll_total)
-    print(roll_list)
-    print(static_list)
