@@ -1,44 +1,28 @@
 import os
 import sys
 import pandas as pd
-import numpy as np
 import re
 from datetime import datetime
 from dotenv import load_dotenv
 import random
-# import psycopg2
-import sqlalchemy as sqldb
-import traceback
 
-import discord
+# import discord
 from discord.ext import commands
 from discord import Intents
 intents = Intents.default()
 intents.members = True
 
 from dice_roller import roll_dice
+from db_tools import TIP_TABLE, Scribe
 
 # Load ENV
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
-PG_SERVER = 'postgresql'
-PG_USER = os.getenv('POSTGRES_USER')
-PG_PW = os.getenv('POSTGRES_PASSWORD')
-PG_HOST = os.getenv('POSTGRES_HOSTNAME')
-PG_DB = os.getenv('DATABASE_NAME')
-
-USER_TABLE = 'dd_users'
-TIP_TABLE = 'transactions'
-
 # Logging Handler
 from loguru import logger
-log_path = r'logs'
-if not os.path.exists(log_path):
-    os.mkdirs(log_path)
 logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
-logger.add(os.path.join(log_path, 'dd_bot.log'), rotation="00:00")
 
 # START BOT!
 bot = commands.Bot(intents=intents, command_prefix='!')
@@ -77,14 +61,14 @@ async def tip(ctx, *args):
     users = []
     gp = 5
     
-    tag_pattern = r'<@!(.*)>'
+    tag_pattern = r'<@(.*)>'
     gp_pattern = r'(\d*)gp'
 
     for arg in args:
-        tag_results = re.search(tag_pattern, arg)
+        tag_results = re.search(tag_pattern, arg.replace('!',''))
         if tag_results:
             user_id = tag_results.group(1)
-            print(user_id)
+            logger.debug(f'User: {user_id}')
             users.append(user_id)
             continue
 
@@ -92,7 +76,7 @@ async def tip(ctx, *args):
         if gp_results:
             gp = gp_results.group(1)
             gp = int(gp)
-            print(gp)
+            logger.debug(f'{gp} gold')
             continue
 
     for user_id in users:
@@ -115,7 +99,7 @@ async def balance(ctx, *args):
     logger.debug('Listing point balances')
     logger.debug(args)
     
-    tag_pattern = r'<@!(.*)>'
+    tag_pattern = r'<@(.*)>'
     nickname_lookup = {str(m.id):m.display_name for m in ctx.guild.members}
 
     scribe = Scribe()
@@ -130,7 +114,7 @@ async def balance(ctx, *args):
     if len(args) > 0:
         users = []
         for arg in args:
-            results = re.search(tag_pattern, arg)
+            results = re.search(tag_pattern, arg.replace('!',''))
             if results:
                 user = results.group(1)
                 users.append(user)
@@ -271,44 +255,6 @@ def parse_username(author_obj):
 
     return user
     
-class Scribe:
-    def __init__(self):
-        self.engine_pattern = '{}://{}:{}@{}/{}'
-        self.engine_name = self.engine_pattern.format(PG_SERVER,
-                                                PG_USER, 
-                                                PG_PW, 
-                                                PG_HOST, 
-                                                PG_DB)
-        self.connect()
-
-    def connect(self):
-        self.engine = sqldb.create_engine(self.engine_name)
-        self.connection = self.engine.connect()
-
-    def close(self):
-        self.connection.close()
-        self.engine.dispose()
-
-    def query(self, query):
-        logger.debug('Executing query')
-        result = None
-        try:
-            result = self.connection.execute(query)
-        except Exception as e:
-            logger.error(f'Error - {e}')
-            logger.error(f'Traceback - {traceback.format_exc()}')
-        logger.debug('Success')
-
-    def select(self, query):
-        logger.debug('Executing query')
-        result = None
-        try:
-            result = self.connection.execute(query).fetchall()
-        except Exception as e:
-            logger.error(f'Error - {e}')
-            logger.error(f'Traceback - {traceback.format_exc()}')
-        logger.debug('Success')
-        return result
 
 # MAIN
 
